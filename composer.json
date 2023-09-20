@@ -1,0 +1,23 @@
+{
+    "name": "danilocgsilva/database_discover_relatory",
+    "autoload": {
+        "psr-4": {
+            "Danilocgsilva\\DatabaseDiscoverRelatory\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Danilo silva",
+            "email": "contact@danilocgsilva.me"
+        }
+    ],
+    "require": {
+        "danilocgsilva/database_discover": "dev-main"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:danilocgsilva/database_discover.git"
+        }
+    ]
+}
