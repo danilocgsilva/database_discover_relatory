@@ -24,9 +24,10 @@ class DatabaseDiscoverRelatory
         foreach ($this->databaseDiscover->getTables() as $table) {
             $this->tablesCount++;
             print(sprintf(
-                "%s, %s\n",
+                "%s, %s, %s registers.\n",
                 ($tableName = $table->getName()),
-                $this->formatTableSize($tableName)
+                $this->formatTableSize($tableName),
+                $this->databaseDiscover->getRegistersCount($tableName)
             ));
         }
 
