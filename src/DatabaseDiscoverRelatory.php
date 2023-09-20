@@ -11,37 +11,71 @@ class DatabaseDiscoverRelatory
 {
     private DatabaseDiscover $databaseDiscover;
 
-    private int $tablesCount = 0;
-
     private int $databaseSize = 0;
 
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo)
+    {
         $this->databaseDiscover = new DatabaseDiscover($pdo);
     }
 
     public function cliTables(): void
     {
+        $tableCount = 0;
         foreach ($this->databaseDiscover->getTables() as $table) {
-            $this->tablesCount++;
-            print(sprintf(
-                "%s, %s, %s registers.\n",
-                ($tableName = $table->getName()),
-                $this->formatTableSize($tableName),
-                $this->databaseDiscover->getRegistersCount($tableName)
-            ));
+            $tableCount++;
+
+            print(
+                $this->getStringTableData(
+                    (new TableData())
+                        ->setTableName($table->getName())
+                        ->setTableSize($this->getTableSize($table->getName()))
+                        ->setRegistersLength($this->databaseDiscover->getRegistersCount($table->getName()))
+                )
+            );
         }
 
-        print(sprintf("\nThe total count of tables is %s.\n", $this->tablesCount));
+        print(sprintf("\nThe total count of tables is %s.\n",  $tableCount));
         print(sprintf(
-            "The size of database is %s.\n", 
+            "The size of database is %s.\n",
             $this->formatSizeFromBytes($this->databaseSize)
         ));
     }
 
-    private function formatTableSize(string $tableName): string
+    public function cliTablesAndOrderBySize()
     {
-        $bytes = $this->databaseDiscover->getTableSize($tableName);
-        return $this->formatSizeFromBytes($bytes);
+        $tableCount = 0;
+        print("Fetching table data...\n\n");
+
+        $fetchedDataTable = [];
+
+        foreach ($this->databaseDiscover->getTables() as $table) {
+            $tableCount++;
+
+            $tableData = (new TableData())
+                ->setTableName($table->getName())
+                ->setTableSize($this->getTableSize($table->getName()))
+                ->setRegistersLength($this->databaseDiscover->getRegistersCount($table->getName()));
+
+            print($this->getStringTableData($tableData));
+            $fetchedDataTable[] = $tableData;
+        }
+
+        usort($fetchedDataTable, fn ($first, $second) => $first->getTableSize() < $second->getTableSize());
+
+        array_map(function($entry) {
+            print($this->getStringTableData($entry));
+        }, $fetchedDataTable);
+
+        print(sprintf("\nThe total count of tables is %s.\n", $tableCount));
+        print(sprintf(
+            "The size of database is %s.\n",
+            $this->formatSizeFromBytes($this->databaseSize)
+        ));
+    }
+
+    private function getTableSize(string $tableName): int
+    {
+        return $this->databaseDiscover->getTableSize($tableName);
     }
 
     private function formatSizeFromBytes(int $bytes): string
@@ -49,5 +83,20 @@ class DatabaseDiscoverRelatory
         $this->databaseSize += $bytes;
         $tableSizeMb = $bytes / 1024 / 1024;
         return number_format($tableSizeMb, 2, ",", ".") . " Mb";
+    }
+
+    private function getStringTableData(TableData $tableData): string
+    {
+        return sprintf(
+            "%s, %s, %s registers.\n",
+            $tableData->getTableName(),
+            $this->formatSizeFromBytes($tableData->getTableSize()),
+            number_format(
+                $tableData->getRegistersLength(),
+                0,
+                ",",
+                "."
+            )
+        );
     }
 }
