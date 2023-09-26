@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Danilocgsilva\DatabaseDiscoverRelatory;
+namespace Danilocgsilva\Database\Discover;
 
 use PDO;
-use Danilocgsilva\DatabaseDiscover\DatabaseDiscover;
+use Danilocgsilva\Database\Discover;
 
-class DatabaseDiscoverRelatory
+class Relatory
 {
-    private DatabaseDiscover $databaseDiscover;
+    private Discover $databaseDiscover;
 
     private int $databaseSize = 0;
 
     public function __construct(PDO $pdo)
     {
-        $this->databaseDiscover = new DatabaseDiscover($pdo);
+        $this->databaseDiscover = new Discover($pdo);
     }
 
     public function cliTables(): void

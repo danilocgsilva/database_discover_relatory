@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Danilocgsilva\DatabaseDiscoverRelatory;
+namespace Danilocgsilva\Database\Discover;
 
 class TableData
 {

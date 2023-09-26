@@ -2,7 +2,7 @@
     "name": "danilocgsilva/database_discover_relatory",
     "autoload": {
         "psr-4": {
-            "Danilocgsilva\\DatabaseDiscoverRelatory\\": "src/"
+            "Danilocgsilva\\Database\\Discover\\Relatory\\": "src/"
         }
     },
     "authors": [

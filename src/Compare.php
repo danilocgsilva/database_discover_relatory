@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Danilocgsilva\DatabaseDiscoverRelatory;
+namespace Danilocgsilva\Database\Discover;
 
 use PDO;
-use Danilocgsilva\DatabaseDiscover\DatabaseDiscover;
+use Danilocgsilva\Database\Discover;
 
 class Compare
 {
     private array $databaseDiscoveries = [];
 
     public function __construct(PDO $pdo1, PDO $pdo2) {
-        $this->databaseDiscoveries[] = new DatabaseDiscover($pdo1);
-        $this->databaseDiscoveries[] = new DatabaseDiscover($pdo2);
+        $this->databaseDiscoveries[] = new Discover($pdo1);
+        $this->databaseDiscoveries[] = new Discover($pdo2);
     }
 
     public function getCliData()
