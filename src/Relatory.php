@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Danilocgsilva\Database\Discover;
 
+use Exception;
 use PDO;
 use Danilocgsilva\Database\Discover;
+use Danilocgsilva\Database\Table;
 
 class Relatory
 {
@@ -24,13 +26,13 @@ class Relatory
         foreach ($this->databaseDiscover->getTables() as $table) {
             $tableCount++;
 
+            $tableData = (new TableData())
+                ->setTableName($table->getName())
+                ->setTableSize($this->getTableSize($table->getName()))
+                ->setRegistersLength($this->databaseDiscover->getRegistersCount($table->getName()));
+
             print(
-                $this->getStringTableData(
-                    (new TableData())
-                        ->setTableName($table->getName())
-                        ->setTableSize($this->getTableSize($table->getName()))
-                        ->setRegistersLength($this->databaseDiscover->getRegistersCount($table->getName()))
-                )
+                $this->getStringTableData($tableData)
             );
         }
 
@@ -41,7 +43,7 @@ class Relatory
         ));
     }
 
-    public function cliTablesAndOrderBySize()
+    public function cliTablesAndOrderBySize(): void
     {
         $tableCount = 0;
         print("Fetching table data...\n\n");
@@ -73,11 +75,80 @@ class Relatory
         ));
     }
 
+    /**
+     * Prints an html table based on table data
+     *
+     * @return void
+     */
+    public function htmlTables(): void
+    {
+        $tableCount = 0;
+        $tableSize = 0;
+
+        $stringHtml = "<table>";
+
+        foreach ($this->databaseDiscover->getTables() as $table) {
+            $tableCount++;
+            $stringHtml .= $this->generateTr($table);
+            $tableSize += $this->getTableSize($table->getName());
+        }
+
+        $stringHtml .= "</table>";
+
+        $stringHtml .= "<br /><br /><p>The table size is {$this->formatSizeFromBytes($tableSize)}</p>";
+
+        print($stringHtml);
+    }
+
+    /**
+     * Prints an html table based on table data, ordered by table size
+     *
+     * @return void
+     */
+    public function orderedHtmlTable(): void
+    {
+        $tables = iterator_to_array($this->databaseDiscover->getTablesWithSize());
+        usort($tables, function ($first, $second) {
+            return $first->getSize() <=> $second->getSize();
+        });
+
+        $stringHtml = "<table>";
+        foreach ($tables as $table) {
+            $stringHtml .= $this->generateTr($table);
+        }
+
+        $stringHtml .= "</table>";
+
+        print($stringHtml);
+    }
+
+    private function generateTr(Table $rawTable)
+    {
+        $tableData = (new TableData())
+            ->setTableName($rawTable->getName())
+            ->setTableSize($this->getTableSize($rawTable->getName()))
+            ->setRegistersLength($this->databaseDiscover->getRegistersCount($rawTable->getName()));
+
+        $stringHtml = "<tr>";
+        $stringHtml .= "<td>{$tableData->getTableName()}</td>";
+        $stringHtml .= "<td>{$this->formatSizeFromBytes($tableData->getTableSize())}</td>";
+        $stringHtml .= "<td>{$tableData->getRegistersLength()}</td>";
+        $stringHtml .= "</tr>";
+
+        return $stringHtml;
+    }
+
     private function getTableSize(string $tableName): int
     {
         return $this->databaseDiscover->getTableSize($tableName);
     }
 
+    /**
+     * Return a friendly string to quickly see the table size um Mbs
+     *
+     * @param integer $bytes
+     * @return string
+     */
     private function formatSizeFromBytes(int $bytes): string
     {
         $this->databaseSize += $bytes;
