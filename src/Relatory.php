@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Danilocgsilva\Database\Discover;
 
-use Exception;
 use PDO;
 use Danilocgsilva\Database\Discover;
 use Danilocgsilva\Database\Table;
 use Danilocgsilva\Database\TableNotFoundException;
+use Psr\Log\LoggerInterface;
 
 class Relatory
 {
@@ -16,9 +16,25 @@ class Relatory
 
     private int $databaseSize = 0;
 
+    private ?LoggerInterface $logger = null;
+
+    private ?string $alias = null;
+
     public function __construct(PDO $pdo)
     {
         $this->databaseDiscover = new Discover($pdo);
+    }
+
+    public function setAlias(string $alias): self
+    {
+        $this->alias = $alias;
+        return $this;
+    }
+
+    public function setLogger(LoggerInterface $logger): self
+    {
+        $this->logger = $logger;
+        return $this;
     }
 
     public function cliTables(): void
@@ -84,19 +100,27 @@ class Relatory
     public function htmlTables(): void
     {
         $tableCount = 0;
-        $tableSize = 0;
+        $databaseSize = 0;
 
         $stringHtml = "<table>";
 
         foreach ($this->databaseDiscover->getTables() as $table) {
             $tableCount++;
             $stringHtml .= $this->generateTr($table);
-            $tableSize += $this->getTableSize($table->getName());
+            $databaseSize += $tableSize = $this->getTableSize($table->getName());
+            if ($this->logger) {
+                $loggerMessageString = $table->getName() . ", table number {$tableCount}.";
+                $loggerMessageString .= " Table size: " . $this->formatSizeFromBytes($tableSize);
+                if ($this->alias) {
+                    $loggerMessageString .= ", alias: " . $this->alias . ".";
+                }
+                $this->logger->info($loggerMessageString);
+            }
         }
 
         $stringHtml .= "</table>";
 
-        $stringHtml .= "<br /><br /><p>The table size is {$this->formatSizeFromBytes($tableSize)}</p>";
+        $stringHtml .= "<br /><br /><p>The table size is {$this->formatSizeFromBytes($databaseSize)}</p>";
 
         print($stringHtml);
     }
