@@ -8,6 +8,7 @@ use Exception;
 use PDO;
 use Danilocgsilva\Database\Discover;
 use Danilocgsilva\Database\Table;
+use Danilocgsilva\Database\TableNotFoundException;
 
 class Relatory
 {
@@ -140,7 +141,11 @@ class Relatory
 
     private function getTableSize(string $tableName): int
     {
-        return $this->databaseDiscover->getTableSize($tableName);
+        try {
+            return $this->databaseDiscover->getTableSize($tableName);
+        } catch (TableNotFoundException $e) {
+            return 0;
+        }
     }
 
     /**
