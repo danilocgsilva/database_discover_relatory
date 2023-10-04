@@ -104,18 +104,15 @@ class Relatory
 
         $stringHtml = "<table>";
 
+        $stringHtml .= "<tr> <th>Name</th> <th>Size in disk</th> <th>Count</th> </tr>";
+
         foreach ($this->databaseDiscover->getTables() as $table) {
-            $tableCount++;
             $stringHtml .= $this->generateTr($table);
             $databaseSize += $tableSize = $this->getTableSize($table->getName());
             if ($this->logger) {
-                $loggerMessageString = $table->getName() . ", table number {$tableCount}.";
-                $loggerMessageString .= " Table size: " . $this->formatSizeFromBytes($tableSize);
-                if ($this->alias) {
-                    $loggerMessageString .= ", alias: " . $this->alias . ".";
-                }
-                $this->logger->info($loggerMessageString);
+                $this->makeLoggerData($table, $tableSize, $tableCount);
             }
+            $tableCount++;
         }
 
         $stringHtml .= "</table>";
@@ -138,6 +135,8 @@ class Relatory
         });
 
         $stringHtml = "<table>";
+
+        $stringHtml .= "<tr> <th>Name</th> <th>Size in disk</th> <th>Count</th> </tr>";
         foreach ($tables as $table) {
             $stringHtml .= $this->generateTr($table);
         }
@@ -145,6 +144,16 @@ class Relatory
         $stringHtml .= "</table>";
 
         print($stringHtml);
+    }
+
+    private function makeLoggerData($table, $tableSize, $tableCount)
+    {
+        $loggerMessageString = $table->getName() . ", table number {$tableCount}.";
+        $loggerMessageString .= " Table size: " . $this->formatSizeFromBytes($tableSize);
+        if ($this->alias) {
+            $loggerMessageString .= ", alias: " . $this->alias . ".";
+        }
+        $this->logger->info($loggerMessageString);
     }
 
     private function generateTr(Table $rawTable)
@@ -157,7 +166,12 @@ class Relatory
         $stringHtml = "<tr>";
         $stringHtml .= "<td>{$tableData->getTableName()}</td>";
         $stringHtml .= "<td>{$this->formatSizeFromBytes($tableData->getTableSize())}</td>";
-        $stringHtml .= "<td>{$tableData->getRegistersLength()}</td>";
+        $stringHtml .= "<td>" . number_format(
+            $tableData->getRegistersLength(),
+            0,
+            ",",
+            "."
+        ) . "</td>";
         $stringHtml .= "</tr>";
 
         return $stringHtml;
